@@ -35,6 +35,7 @@
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "pcloud-sdk-js": "^2.0.0",
     "tslib": "~2.4"
   },
   "volta": {
