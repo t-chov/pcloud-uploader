@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -15,6 +16,29 @@ const (
 	ENV_PCLOUD_PASSWORD = "PCLOUD_PASSWORD"
 )
 
+var commands = []*cli.Command{
+	{
+		Name:    "ls",
+		Aliases: []string{"listfolder"},
+		Usage:   "Receive data for a folder.",
+		Action: func(c *cli.Context) error {
+			auth := c.Context.Value("auth").(string)
+			if err := listfolder(auth, c.Args().First(), c.Bool("recursive")); err != nil {
+				return err
+			}
+			return nil
+		},
+		ArgsUsage: "<PATH>",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "recursive",
+				Aliases: []string{"r"},
+				Usage:   "full directory tree will be returned",
+			},
+		},
+	},
+}
+
 func main() {
 	os.Exit(run())
 }
@@ -23,7 +47,13 @@ func run() int {
 	app := cli.NewApp()
 	app.Name = APP_NAME
 	app.Version = VERSION
-	app.Action = appAction
+	app.Before = login
+	app.Commands = commands
+	app.Action = func(c *cli.Context) error {
+		auth := c.Context.Value("auth").(string)
+		fmt.Println(auth)
+		return nil
+	}
 	if err := app.Run(os.Args); err != nil {
 		return 1
 	} else {
@@ -31,7 +61,7 @@ func run() int {
 	}
 }
 
-func appAction(c *cli.Context) error {
+func login(c *cli.Context) error {
 	var username, password, auth *string
 	var err error
 	if username, err = loadFromInput(ENV_PCLOUD_USERNAME, "username"); err != nil {
@@ -46,7 +76,8 @@ func appAction(c *cli.Context) error {
 	} else if *auth == "" {
 		return fmt.Errorf("empty auth")
 	}
-	fmt.Printf("auth: %s\n", *auth)
+
+	c.Context = context.WithValue(c.Context, "auth", *auth)
 	return nil
 }
 
