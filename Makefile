@@ -1,4 +1,4 @@
-BIN := pcloud-uploader
+BIN := pcloud
 VERSION := "0.0.1"
 CURRENT_REVISION := $(shell git rev-parse --short HEAD)
 BUILD_LDFLAGS := "-s -w -X main.revision=$(CURRENT_REVISION)"
