@@ -23,7 +23,7 @@ var commands = []*cli.Command{
 		Usage:   "Receive data for a folder.",
 		Action: func(c *cli.Context) error {
 			auth := c.Context.Value("auth").(string)
-			if err := listfolder(auth, c.Args().First(), c.Bool("recursive")); err != nil {
+			if err := listfolder(auth, c.Args().First(), c.Bool("recursive"), c.Bool("showdeleted"), c.Bool("nofiles"), c.Bool("noshares")); err != nil {
 				return err
 			}
 			return nil
@@ -34,6 +34,18 @@ var commands = []*cli.Command{
 				Name:    "recursive",
 				Aliases: []string{"r"},
 				Usage:   "full directory tree will be returned",
+			},
+			&cli.BoolFlag{
+				Name:  "showdeleted",
+				Usage: "deleted files and folders that can be undeleted will be displayed",
+			},
+			&cli.BoolFlag{
+				Name:  "nofiles",
+				Usage: "only the folder (sub)structure will be returned",
+			},
+			&cli.BoolFlag{
+				Name:  "noshares",
+				Usage: "only user's own folders and files will be displayed",
 			},
 		},
 	},
@@ -91,4 +103,12 @@ func loadFromInput(envName string, title string) (*string, error) {
 	}
 	value = strings.TrimSpace(value)
 	return &value, nil
+}
+
+func btoi(b bool) int {
+	if b {
+		return 1
+	} else {
+		return 0
+	}
 }
