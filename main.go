@@ -89,6 +89,7 @@ func login(c *cli.Context) error {
 		return fmt.Errorf("empty auth")
 	}
 
+	//lint:ignore SA1029 set auth
 	c.Context = context.WithValue(c.Context, "auth", *auth)
 	return nil
 }
