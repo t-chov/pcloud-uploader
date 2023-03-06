@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -34,8 +33,6 @@ type listfolderMetadata struct {
 }
 
 var printFolder = color.New(color.FgBlue).PrintlnFunc()
-
-var prefixExp = regexp.MustCompile("^/+")
 
 func listfolder(auth, path string, recursive, showdeleted, nofiles, noshares bool) error {
 	// must start with `/`, must remove end of `/`
