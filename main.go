@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,7 +25,7 @@ var commands = []*cli.Command{
 		Action: func(c *cli.Context) error {
 			auth := c.Context.Value("auth").(string)
 			if err := listfolder(auth, c.Args().First(), c.Bool("recursive"), c.Bool("showdeleted"), c.Bool("nofiles"), c.Bool("noshares")); err != nil {
-				return err
+				return printError(err)
 			}
 			return nil
 		},
@@ -49,6 +50,27 @@ var commands = []*cli.Command{
 			},
 		},
 	},
+	{
+		Name:    "up",
+		Aliases: []string{"uploadfile"},
+		Usage:   "Upload a file.",
+		Action: func(c *cli.Context) error {
+			auth := c.Context.Value("auth").(string)
+			src := c.Args().First()
+			file, err := os.Open(src)
+			if err != nil {
+				return printError(fmt.Errorf("cannot open %s", src))
+			}
+			defer file.Close()
+
+			dest := c.Args().Get(1)
+			if err := uploadfile(auth, dest, file); err != nil {
+				return printError(err)
+			}
+			return nil
+		},
+		ArgsUsage: "<SOURCE_FILE> <DEST_PATH>",
+	},
 }
 
 func main() {
@@ -61,11 +83,6 @@ func run() int {
 	app.Version = VERSION
 	app.Before = login
 	app.Commands = commands
-	app.Action = func(c *cli.Context) error {
-		auth := c.Context.Value("auth").(string)
-		fmt.Println(auth)
-		return nil
-	}
 	if err := app.Run(os.Args); err != nil {
 		return 1
 	} else {
@@ -112,4 +129,10 @@ func btoi(b bool) int {
 	} else {
 		return 0
 	}
+}
+
+func printError(err error) error {
+	red := color.New(color.FgRed).FprintfFunc()
+	red(os.Stderr, "%v\n", err)
+	return err
 }

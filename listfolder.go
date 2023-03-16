@@ -21,7 +21,7 @@ type listfolderMetadata struct {
 	Path     string               `json:"path"`
 	Name     string               `json:"name"`
 	Created  string               `json:"created"`
-	IsMine   bool                 `json:"ismine"`
+	Ismine   bool                 `json:"ismine"`
 	Thumb    bool                 `json:"thumb"`
 	Modified string               `json:"Modified"`
 	Id       string               `json:"id"`
@@ -63,7 +63,7 @@ func listfolder(auth, path string, recursive, showdeleted, nofiles, noshares boo
 
 	var result listfolderResult
 	if err := json.Unmarshal(body, &result); err != nil {
-		return fmt.Errorf("unmarshal listfolder result `%s`: %v", string(body), err)
+		return fmt.Errorf("unmarshal listfolder result %s: %v", string(body), err)
 	}
 	printListfolder("/", result.Metadata)
 	return nil
