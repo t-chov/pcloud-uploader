@@ -14,10 +14,10 @@ go install github.com/t-chov/pcloud-uploader@latest
 
 ```
 NAME:
-   pcloud - A new cli application
+   pcloud-uploader - A new cli application
 
 USAGE:
-   pcloud [global options] command [command options] [arguments...]
+   pcloud-uploader [global options] command [command options] [arguments...]
 
 VERSION:
    0.0.1
@@ -49,12 +49,12 @@ $ export PCLOUD_PASSWORD=IamJohnSmith
 ## Commands
 
 ```
-$ pcloud listfolder --help
+$ pcloud-uploader listfolder --help
 NAME:
-   pcloud ls - Receive data for a folder.
+   pcloud-uploader ls - Receive data for a folder.
 
 USAGE:
-   pcloud ls [command options] <PATH>
+   pcloud-uploader ls [command options] <PATH>
 
 OPTIONS:
    --recursive, -r  full directory tree will be returned (default: false)
@@ -65,12 +65,12 @@ OPTIONS:
 ```
 
 ```
-$ pcloud uploadfile --help
+$ pcloud-uploader uploadfile --help
 NAME:
-   pcloud up - Upload a file.
+   pcloud-uploader up - Upload a file.
 
 USAGE:
-   pcloud up [command options] <SOURCE_FILE> <DEST_PATH>
+   pcloud-uploader up [command options] <SOURCE_FILE> <DEST_PATH>
 
 OPTIONS:
    --help, -h  show help

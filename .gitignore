@@ -1,5 +1,5 @@
 # binary
-pcloud
+pcloud-uploader
 
 # Test binary, built with `go test -c`
 *.test
