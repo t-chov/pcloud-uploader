@@ -7,7 +7,7 @@ A command line client for [pCloud](https://my.pcloud.com/)
 ## Installation
 
 ```
-go install github.com/t-chov/pcloud@latest
+go install github.com/t-chov/pcloud-uploader@latest
 ```
 
 ## Usage
