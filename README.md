@@ -1,5 +1,7 @@
 # pcloud-uploader
 
+[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/t-chov/cles/main/LICENSE)
+
 A command line client for [pCloud](https://my.pcloud.com/)
 
 ## Installation
