@@ -1,18 +1,18 @@
 # pcloud-uploader
 
-[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/t-chov/cles/main/LICENSE)
+[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/t-chov/pcloud-uploader/main/LICENSE)
 
-A command line client for [pCloud](https://my.pcloud.com/)
+A command-line client for [pCloud](https://my.pcloud.com/).
 
 ## Installation
 
-```
+```sh
 go install github.com/t-chov/pcloud-uploader@latest
 ```
 
 ## Usage
 
-```
+```text
 NAME:
    pcloud-uploader - A new cli application
 
@@ -20,7 +20,7 @@ USAGE:
    pcloud-uploader [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.1
+   0.0.3
 
 COMMANDS:
    ls, listfolder  Receive data for a folder.
@@ -34,22 +34,28 @@ GLOBAL OPTIONS:
 
 ## Requirements
 
-You have to register pCloud.
+You must have a registered pCloud account.
 
-And set two environment variables
+You can provide your credentials via environment variables to avoid interactive login prompts every time:
 
-- `PCLOUD_USERNAME` : email address you have registered.
-- `PCLOUD_PASSWORD` : login password for pCloud.
+- `PCLOUD_USERNAME`: The email address associated with your pCloud account.
+- `PCLOUD_PASSWORD`: Your pCloud login password.
 
+```sh
+export PCLOUD_USERNAME=john.smith@example.com
+export PCLOUD_PASSWORD=IamJohnSmith
 ```
-$ export PCLOUD_USERNAME=john.smith@example.com
-$ export PCLOUD_PASSWORD=IamJohnSmith
-```
+
+If these environment variables are not set, the application will prompt you to enter your username and password interactively upon running a command.
 
 ## Commands
 
-```
-$ pcloud-uploader listfolder --help
+### `listfolder` / `ls`
+
+Receive metadata and structure for a folder on pCloud. It prints a tree-like outline of the files and directories.
+
+```text
+$ pcloud-uploader ls --help
 NAME:
    pcloud-uploader ls - Receive data for a folder.
 
@@ -64,8 +70,21 @@ OPTIONS:
    --help, -h       show help
 ```
 
+**Example:**
+```sh
+# List contents of the root directory
+$ pcloud-uploader ls /
+
+# List contents recursively
+$ pcloud-uploader ls -r /Photos
 ```
-$ pcloud-uploader uploadfile --help
+
+### `uploadfile` / `up`
+
+Upload a local file to a specified remote destination path. Prints the updated file's hash upon successful upload.
+
+```text
+$ pcloud-uploader up --help
 NAME:
    pcloud-uploader up - Upload a file.
 
@@ -74,4 +93,10 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help
+```
+
+**Example:**
+```sh
+# Upload a local file.txt to /Documents/file.txt on pCloud
+$ pcloud-uploader up ./file.txt /Documents/file.txt
 ```
