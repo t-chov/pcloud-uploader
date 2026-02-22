@@ -1,8 +1,8 @@
 package pcloud
 
 import (
+	"io"
 	"net/http"
-	"os"
 )
 
 const defaultBaseURL = "https://api.pcloud.com"
@@ -11,7 +11,7 @@ const defaultBaseURL = "https://api.pcloud.com"
 type API interface {
 	Authenticate(username, password string) (string, error)
 	ListFolder(auth, path string, opts ListFolderOptions) (*ListFolderResult, error)
-	UploadFile(auth, path string, file *os.File) (*UploadFileResult, error)
+	UploadFile(auth, path, filename string, r io.Reader) (*UploadFileResult, error)
 }
 
 // Client implements the API interface using HTTP calls to the pCloud API.
