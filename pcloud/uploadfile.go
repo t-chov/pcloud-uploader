@@ -9,7 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -50,7 +49,7 @@ type Checksum struct {
 }
 
 // UploadFile uploads a file to the specified path on pCloud.
-func (c *Client) UploadFile(auth, path string, file *os.File) (*UploadFileResult, error) {
+func (c *Client) UploadFile(auth, path, filename string, r io.Reader) (*UploadFileResult, error) {
 	path = strings.TrimLeft(path, "/")
 	path = "/" + path
 
@@ -61,11 +60,11 @@ func (c *Client) UploadFile(auth, path string, file *os.File) (*UploadFileResult
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("filename", file.Name())
+	part, err := writer.CreateFormFile("filename", filename)
 	if err != nil {
 		return nil, fmt.Errorf("CreateFormFile: %v", err)
 	}
-	io.Copy(part, file)
+	io.Copy(part, r)
 	writer.Close()
 
 	reqURL := fmt.Sprintf("%s/uploadfile?%s", c.BaseURL, params.Encode())

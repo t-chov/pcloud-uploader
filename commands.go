@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -11,17 +13,23 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var printFolder = color.New(color.FgBlue).PrintlnFunc()
+// contextKey is an unexported type for context keys to avoid collisions.
+type contextKey string
+
+// authContextKey is the context key for the pCloud auth token.
+const authContextKey contextKey = "auth"
+
+var printFolderFn = color.New(color.FgBlue).FprintlnFunc()
 
 // run creates a default pCloud client and starts the CLI application.
 func run() int {
 	client := pcloud.NewClient("")
-	return runWithClient(client)
+	return runWithClient(client, os.Args)
 }
 
-// runWithClient starts the CLI application with the given pCloud API client.
+// runWithClient starts the CLI application with the given pCloud API client and args.
 // This is the testable entry point that allows dependency injection.
-func runWithClient(client pcloud.API) int {
+func runWithClient(client pcloud.API, args []string) int {
 	app := cli.NewApp()
 	app.Name = APP_NAME
 	app.Version = VERSION
@@ -29,7 +37,7 @@ func runWithClient(client pcloud.API) int {
 		return login(c, client)
 	}
 	app.Commands = buildCommands(client)
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(args); err != nil {
 		return 1
 	}
 	return 0
@@ -43,7 +51,10 @@ func buildCommands(client pcloud.API) []*cli.Command {
 			Aliases: []string{"listfolder"},
 			Usage:   "Receive data for a folder.",
 			Action: func(c *cli.Context) error {
-				auth := c.Context.Value("auth").(string)
+				auth, ok := c.Context.Value(authContextKey).(string)
+				if !ok {
+					return fmt.Errorf("auth not set in context")
+				}
 				opts := pcloud.ListFolderOptions{
 					Recursive:   c.Bool("recursive"),
 					ShowDeleted: c.Bool("showdeleted"),
@@ -54,7 +65,7 @@ func buildCommands(client pcloud.API) []*cli.Command {
 				if err != nil {
 					return printError(err)
 				}
-				printListfolder("/", result.Metadata)
+				printListfolder(os.Stdout, "/", result.Metadata)
 				return nil
 			},
 			ArgsUsage: "<PATH>",
@@ -83,7 +94,10 @@ func buildCommands(client pcloud.API) []*cli.Command {
 			Aliases: []string{"uploadfile"},
 			Usage:   "Upload a file.",
 			Action: func(c *cli.Context) error {
-				auth := c.Context.Value("auth").(string)
+				auth, ok := c.Context.Value(authContextKey).(string)
+				if !ok {
+					return fmt.Errorf("auth not set in context")
+				}
 				src := c.Args().First()
 				file, err := os.Open(src)
 				if err != nil {
@@ -92,7 +106,7 @@ func buildCommands(client pcloud.API) []*cli.Command {
 				defer file.Close()
 
 				dest := c.Args().Get(1)
-				result, err := client.UploadFile(auth, dest, file)
+				result, err := client.UploadFile(auth, dest, filepath.Base(src), file)
 				if err != nil {
 					return printError(err)
 				}
@@ -109,11 +123,11 @@ func buildCommands(client pcloud.API) []*cli.Command {
 // login is a cli.BeforeFunc that authenticates against pCloud and stores
 // the session token in the context.
 func login(c *cli.Context, client pcloud.API) error {
-	username, err := loadFromInput(ENV_PCLOUD_USERNAME, "username")
+	username, err := loadFromInput(os.Stdin, ENV_PCLOUD_USERNAME, "username")
 	if err != nil {
 		return err
 	}
-	password, err := loadFromInput(ENV_PCLOUD_PASSWORD, "password")
+	password, err := loadFromInput(os.Stdin, ENV_PCLOUD_PASSWORD, "password")
 	if err != nil {
 		return err
 	}
@@ -126,18 +140,17 @@ func login(c *cli.Context, client pcloud.API) error {
 		return fmt.Errorf("empty auth")
 	}
 
-	//lint:ignore SA1029 set auth
-	c.Context = context.WithValue(c.Context, "auth", auth)
+	c.Context = context.WithValue(c.Context, authContextKey, auth)
 	return nil
 }
 
 // loadFromInput reads a value from the environment variable envName.
-// If the variable is not set, it prompts the user on stdin with the given title.
-func loadFromInput(envName string, title string) (string, error) {
+// If the variable is not set, it prompts the user on r with the given title.
+func loadFromInput(r io.Reader, envName string, title string) (string, error) {
 	value := os.Getenv(envName)
 	if value == "" {
 		fmt.Printf("%s: ", title)
-		if _, err := fmt.Scan(&value); err != nil {
+		if _, err := fmt.Fscan(r, &value); err != nil {
 			return "", fmt.Errorf("scan %s: %v", title, err)
 		}
 	}
@@ -145,20 +158,20 @@ func loadFromInput(envName string, title string) (string, error) {
 	return value, nil
 }
 
-// printListfolder recursively prints a folder tree to stdout.
+// printListfolder recursively prints a folder tree to w.
 // Folders are printed in blue; files are printed in the default color.
-func printListfolder(path string, ls pcloud.FolderMetadata) {
+func printListfolder(w io.Writer, path string, ls pcloud.FolderMetadata) {
 	if ls.Path == "/" {
-		printFolder("/")
+		printFolderFn(w, "/")
 	} else if ls.IsFolder {
 		path += ls.Name + "/"
-		printFolder(path)
+		printFolderFn(w, path)
 	} else {
 		path += ls.Name
-		fmt.Println(path)
+		fmt.Fprintln(w, path)
 	}
 	for _, content := range ls.Contents {
-		printListfolder(path, content)
+		printListfolder(w, path, content)
 	}
 }
 
