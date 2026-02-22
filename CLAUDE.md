@@ -13,18 +13,25 @@ A Go CLI client for the [pCloud](https://my.pcloud.com/) cloud storage API. Buil
 - `make test` — build then run `go test -v ./...`
 - `make clean` — remove build outputs and cached artifacts
 - `go run . ls /Backup` — quickest feedback loop when iterating on a command
-- `gofmt -w *.go` — format before committing
+- `gofmt -w .` — format before committing
 
 ## Architecture
 
-All Go sources live at the repo root in a single `main` package. No subdirectories or subpackages.
+The project uses two packages: the `main` package at the repo root for CLI wiring, and the `pcloud` subpackage for API client logic.
 
-- **`main.go`** — CLI entry point: defines commands (`ls`, `up`), handles credential loading from `PCLOUD_USERNAME`/`PCLOUD_PASSWORD` env vars or stdin, runs `login()` as a pre-command hook to obtain an auth token
-- **`auth.go`** — authenticates against `api.pcloud.com/userinfo` and returns a session token
-- **`listfolder.go`** — wraps `api.pcloud.com/listfolder`, recursively prints folder tree with colored output
-- **`uploadfolder.go`** — wraps `api.pcloud.com/uploadfile` via multipart POST, prints file hash on success
+### `pcloud/` — API client package
 
-New commands should be added as additional top-level `.go` files named with short verbs matching the CLI aliases.
+- **`pcloud/client.go`** — `API` interface (`Authenticate`, `ListFolder`, `UploadFile`), `Client` struct with `BaseURL`/`HTTPClient` fields, `NewClient` constructor
+- **`pcloud/auth.go`** — `Client.Authenticate` method: obtains a session token from `api.pcloud.com/userinfo`
+- **`pcloud/listfolder.go`** — `Client.ListFolder` method + `ListFolderResult`, `FolderMetadata` types
+- **`pcloud/uploadfile.go`** — `Client.UploadFile` method + `UploadFileResult`, `FileMetadata`, `Checksum` types
+
+### Root (`main` package) — CLI layer
+
+- **`main.go`** — minimal entry point: `main()` + constants (`APP_NAME`, `VERSION`, env var names)
+- **`commands.go`** — CLI wiring: `run`, `runWithClient`, `buildCommands`, `login` hook, `loadFromInput`, `printListfolder`, `printError`
+
+To test commands, inject a mock `pcloud.API` into `runWithClient`. New API operations should be added as methods on `Client` and exposed via the `API` interface. New CLI commands should be added in `buildCommands` in `commands.go`.
 
 ## Coding Conventions
 
