@@ -1,6 +1,7 @@
 # pcloud-uploader
 
-[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/t-chov/pcloud-uploader/main/LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/t-chov/pcloud-uploader/main/LICENSE)
+[![CI](https://github.com/t-chov/pcloud-uploader/actions/workflows/ci.yaml/badge.svg)](https://github.com/t-chov/pcloud-uploader/actions/workflows/ci.yaml)
 
 A command-line client for [pCloud](https://my.pcloud.com/).
 
