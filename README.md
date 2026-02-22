@@ -20,7 +20,7 @@ USAGE:
    pcloud-uploader [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.4
+   0.0.5
 
 COMMANDS:
    ls, listfolder  Receive data for a folder.
