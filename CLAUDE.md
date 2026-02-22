@@ -36,6 +36,7 @@ To test commands, inject a mock `pcloud.API` into `runWithClient`. New API opera
 ## Coding Conventions
 
 - Standard Go conventions enforced by `gofmt` (tabs, capitalized exports)
+- All exported symbols (functions, types, constants, variables) and non-trivial unexported functions must have [godoc](https://go.dev/blog/godoc) comments beginning with the symbol name (e.g., `// FuncName does …`)
 - Keep each file focused on a single command
 - Environment variables use uppercase snake case
 - Tests go in `_test.go` siblings; mock HTTP by extracting API calls into interfaces
