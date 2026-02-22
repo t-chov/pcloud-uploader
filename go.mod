@@ -1,6 +1,6 @@
 module github.com/t-chov/pcloud-uploader
 
-go 1.18
+go 1.25
 
 require (
 	github.com/fatih/color v1.14.1
