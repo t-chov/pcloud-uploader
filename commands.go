@@ -13,11 +13,14 @@ import (
 
 var printFolder = color.New(color.FgBlue).PrintlnFunc()
 
+// run creates a default pCloud client and starts the CLI application.
 func run() int {
 	client := pcloud.NewClient("")
 	return runWithClient(client)
 }
 
+// runWithClient starts the CLI application with the given pCloud API client.
+// This is the testable entry point that allows dependency injection.
 func runWithClient(client pcloud.API) int {
 	app := cli.NewApp()
 	app.Name = APP_NAME
@@ -32,6 +35,7 @@ func runWithClient(client pcloud.API) int {
 	return 0
 }
 
+// buildCommands returns the CLI command definitions for ls and up.
 func buildCommands(client pcloud.API) []*cli.Command {
 	return []*cli.Command{
 		{
@@ -102,6 +106,8 @@ func buildCommands(client pcloud.API) []*cli.Command {
 	}
 }
 
+// login is a cli.BeforeFunc that authenticates against pCloud and stores
+// the session token in the context.
 func login(c *cli.Context, client pcloud.API) error {
 	username, err := loadFromInput(ENV_PCLOUD_USERNAME, "username")
 	if err != nil {
@@ -125,6 +131,8 @@ func login(c *cli.Context, client pcloud.API) error {
 	return nil
 }
 
+// loadFromInput reads a value from the environment variable envName.
+// If the variable is not set, it prompts the user on stdin with the given title.
 func loadFromInput(envName string, title string) (string, error) {
 	value := os.Getenv(envName)
 	if value == "" {
@@ -137,6 +145,8 @@ func loadFromInput(envName string, title string) (string, error) {
 	return value, nil
 }
 
+// printListfolder recursively prints a folder tree to stdout.
+// Folders are printed in blue; files are printed in the default color.
 func printListfolder(path string, ls pcloud.FolderMetadata) {
 	if ls.Path == "/" {
 		printFolder("/")
@@ -152,6 +162,7 @@ func printListfolder(path string, ls pcloud.FolderMetadata) {
 	}
 }
 
+// printError prints err to stderr in red and returns it.
 func printError(err error) error {
 	red := color.New(color.FgRed).FprintfFunc()
 	red(os.Stderr, "%v\n", err)

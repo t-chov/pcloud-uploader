@@ -4,7 +4,7 @@ import "os"
 
 const (
 	APP_NAME            = "pcloud-uploader"
-	VERSION             = "0.0.3"
+	VERSION             = "0.0.4"
 	ENV_PCLOUD_USERNAME = "PCLOUD_USERNAME"
 	ENV_PCLOUD_PASSWORD = "PCLOUD_PASSWORD"
 )
