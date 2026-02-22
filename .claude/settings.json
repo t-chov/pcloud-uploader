@@ -1,0 +1,19 @@
+{
+    "includeCoAuthoredBy": false,
+    "permissions": {
+        "allow": [
+            "Bash(make:*)",
+            "Bash(/usr/bin/make:*)",
+            "Bash(git -C *)",
+            "Bash(gh pr create:*)",
+            "Bash(gofmt:*)",
+            "Bash(go mod tidy:*)",
+            "Bash(go vet:*)",
+            "Bash(go test:*)",
+            "WebSearch"
+        ],
+        "deny": [
+            "Bash(rm -rf:*)"
+        ]
+    }
+}
