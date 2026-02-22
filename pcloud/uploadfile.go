@@ -1,4 +1,4 @@
-package main
+package pcloud
 
 import (
 	"bytes"
@@ -14,14 +14,16 @@ import (
 	"strings"
 )
 
-type uploadfileResult struct {
-	Result    int                  `json:"result"`
-	Fileids   []int                `json:"fileids"`
-	Checksums []checksum           `json:"checksums"`
-	Metadata  []uploadfileMetadata `json:"metadata"`
+// UploadFileResult represents the API response from uploadfile.
+type UploadFileResult struct {
+	Result    int            `json:"result"`
+	Fileids   []int          `json:"fileids"`
+	Checksums []Checksum     `json:"checksums"`
+	Metadata  []FileMetadata `json:"metadata"`
 }
 
-type uploadfileMetadata struct {
+// FileMetadata represents metadata for an uploaded file.
+type FileMetadata struct {
 	Ismine         bool    `json:"ismine"`
 	Id             string  `json:"id"`
 	Created        string  `json:"created"`
@@ -41,12 +43,14 @@ type uploadfileMetadata struct {
 	Hash           big.Int `json:"hash"`
 }
 
-type checksum struct {
+// Checksum holds file checksums returned by the API.
+type Checksum struct {
 	Sha1 string `json:"sha1"`
 	Md5  string `json:"md5"`
 }
 
-func uploadfile(auth, path string, file *os.File) error {
+// UploadFile uploads a file to the specified path on pCloud.
+func (c *Client) UploadFile(auth, path string, file *os.File) (*UploadFileResult, error) {
 	path = strings.TrimLeft(path, "/")
 	path = "/" + path
 
@@ -59,40 +63,33 @@ func uploadfile(auth, path string, file *os.File) error {
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("filename", file.Name())
 	if err != nil {
-		return fmt.Errorf("CreateFormFile: %v", err)
+		return nil, fmt.Errorf("CreateFormFile: %v", err)
 	}
 	io.Copy(part, file)
-	defer writer.Close()
+	writer.Close()
 
-	url := fmt.Sprintf("https://api.pcloud.com/uploadfile?%s", params.Encode())
-	req, err := http.NewRequest("POST", url, body)
+	reqURL := fmt.Sprintf("%s/uploadfile?%s", c.BaseURL, params.Encode())
+	req, err := http.NewRequest("POST", reqURL, body)
 	if err != nil {
-		return fmt.Errorf("newRequest: %v", err)
+		return nil, fmt.Errorf("newRequest: %v", err)
 	}
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-	client := &http.Client{}
 
-	resp, err := client.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("uploadfile: %v", err)
+		return nil, fmt.Errorf("uploadfile: %v", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
-	// debug
-	// fmt.Println(string(respBody))
 	if err != nil {
-		return fmt.Errorf("read uploadfile body %s:%v", respBody, err)
+		return nil, fmt.Errorf("read uploadfile body %s:%v", respBody, err)
 	}
 
-	var result uploadfileResult
+	var result UploadFileResult
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return fmt.Errorf("unmarshal uploadfile result %s:%v", string(respBody), err)
+		return nil, fmt.Errorf("unmarshal uploadfile result %s:%v", string(respBody), err)
 	}
 
-	for _, metadata := range result.Metadata {
-		fmt.Println(metadata.Hash.String())
-	}
-
-	return nil
+	return &result, nil
 }
